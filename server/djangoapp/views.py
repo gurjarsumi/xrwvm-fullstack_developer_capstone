@@ -94,10 +94,27 @@ def get_dealer_reviews(request, dealer_id):
     if(dealer_id):
         endpoint = "/fetchReviews/dealer/"+str(dealer_id)
         reviews = get_request(endpoint)
+        # Check if reviews is None or not a list (error from backend)
+        if reviews is None or not isinstance(reviews, list):
+            return JsonResponse({"status":200,"reviews":[]})
+        
         for review_detail in reviews:
-            response = analyze_review_sentiments(review_detail['review'])
-            print(response)
-            review_detail['sentiment'] = response['sentiment']
+            # We wrap the sentiment analysis in a try-except block to prevent
+            # the entire view from crashing if the sentiment service is down
+            # or if 'review' key is missing.
+            try:
+                response = analyze_review_sentiments(review_detail['review'])
+                # Check if response is valid and has sentiment key
+                if response and 'sentiment' in response:
+                    review_detail['sentiment'] = response['sentiment']
+                else:
+                    review_detail['sentiment'] = "neutral" # Default fallback
+            except Exception as e:
+                # If any error occurs (e.g., connection error, parsing error)
+                # default to neutral so the review is still displayed
+                print(f"Error analyzing sentiment: {e}")
+                review_detail['sentiment'] = "neutral"
+
         return JsonResponse({"status":200,"reviews":reviews})
     else:
         return JsonResponse({"status":400,"message":"Bad Request"})
@@ -110,6 +127,7 @@ def get_dealer_details(request, dealer_id):
     else:
         return JsonResponse({"status":400,"message":"Bad Request"})
 
+@csrf_exempt
 def add_review(request):
     if(request.user.is_anonymous == False):
         data = json.loads(request.body)
