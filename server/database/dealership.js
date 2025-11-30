@@ -1,17 +1,21 @@
+/*jshint esversion: 6 */
+
 const mongoose = require('mongoose');
 
-const Schema = mongoose.Schema;
-
-const dealerships = new Schema({
-	id: {
+const dealershipSchema = new mongoose.Schema({
+  id: {
     type: Number,
-    required: true,
-	},
-	city: {
+    required: true
+  },
+  city: {
     type: String,
     required: true
   },
   state: {
+    type: String,
+    required: true
+  },
+  st: {
     type: String,
     required: true
   },
@@ -24,20 +28,21 @@ const dealerships = new Schema({
     required: true
   },
   lat: {
-    type: String,
+    type: Number,
     required: true
   },
   long: {
-    type: String,
+    type: Number,
     required: true
   },
   short_name: {
     type: String,
+    required: true
   },
   full_name: {
     type: String,
     required: true
-  }
+  },
 });
 
-module.exports = mongoose.model('dealerships', dealerships);
+module.exports = mongoose.model('Dealership', dealershipSchema);
